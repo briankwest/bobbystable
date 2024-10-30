@@ -276,27 +276,3 @@ def move_reservation(data):
         return {"response": f"Reservation moved to {data['new_date']} at {data['new_time']}. Contact: {reservations[reservation_id]['phone_number']}"}
     return {"response": "Reservation not found."}
 ```
-
----
-
-## 6. Cursor Compose System Prompt
-
-**Cursor Compose System Prompt**:
-
-"Build a Python application named *Bobby’s Table* that uses SWAIG functions for a restaurant reservation system. Implement five functions:
-
-1. **`create_reservation`**: Creates a reservation, returning a unique ID and confirmation.
-2. **`get_reservation`**: Retrieves a reservation by ID, returning details in a human-readable format
-
-.
-3. **`update_reservation`**: Updates a reservation, confirming the changes.
-4. **`cancel_reservation`**: Cancels a reservation and provides a confirmation message.
-5. **`move_reservation`**: Moves a reservation to a new date and time.
-
-Each function should:
-- Return a `response` field with human-readable statements for LLM consumption.
-- Use in-memory storage with no database.
-- Generate reservation IDs with Python’s `uuid`.
-
-Ensure error handling is included for each function to provide user-friendly responses." 
-
