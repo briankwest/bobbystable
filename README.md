@@ -1,7 +1,3 @@
-Here’s the revised document where each function in Section 5 returns a `response` field with a human-readable statement for the LLM to consume. This format ensures clarity in communication between the functions and the LLM.
-
----
-
 # Bobby’s Table Reservation System
 
 ## Table of Contents
