@@ -2,7 +2,7 @@ Here’s the revised document where each function in Section 5 returns a `respon
 
 ---
 
-# Bobby’s Table Reservation System - SWAIG-Based Python Rewrite
+# Bobby’s Table Reservation System
 
 ## Table of Contents
 
