@@ -30,9 +30,9 @@ def verify_password(username, password):
 # SWAIG function signatures
 SWAIG_FUNCTION_SIGNATURES = {
     "create_reservation": {
-        "description": "Create a new reservation for a customer",
+        "purpose": "Create a new reservation for a customer",
         "function": "create_reservation",
-        "parameters": {
+        "argument": {
             "type": "object",
             "properties": {
                 "name": {
@@ -60,9 +60,9 @@ SWAIG_FUNCTION_SIGNATURES = {
         }
     },
     "get_reservation": {
-        "description": "Retrieve an existing reservation",
+        "purpose": "Retrieve an existing reservation",
         "function": "get_reservation",
-        "parameters": {
+        "argument": {
             "type": "object",
             "properties": {
                 "phone_number": {
@@ -74,9 +74,9 @@ SWAIG_FUNCTION_SIGNATURES = {
         }
     },
     "update_reservation": {
-        "description": "Update an existing reservation",
+        "purpose": "Update an existing reservation",
         "function": "update_reservation",
-        "parameters": {
+        "argument": {
             "type": "object",
             "properties": {
                 "phone_number": {
@@ -104,9 +104,9 @@ SWAIG_FUNCTION_SIGNATURES = {
         }
     },
     "cancel_reservation": {
-        "description": "Cancel an existing reservation",
+        "purpose": "Cancel an existing reservation",
         "function": "cancel_reservation",
-        "parameters": {
+        "argument": {
             "type": "object",
             "properties": {
                 "phone_number": {
@@ -118,9 +118,9 @@ SWAIG_FUNCTION_SIGNATURES = {
         }
     },
     "move_reservation": {
-        "description": "Move an existing reservation to a new date and time",
+        "purpose": "Move an existing reservation to a new date and time",
         "function": "move_reservation",
-        "parameters": {
+        "argument": {
             "type": "object",
             "properties": {
                 "phone_number": {
@@ -168,6 +168,8 @@ def get_function_signatures(requested_functions, host_url):
         if func in SWAIG_FUNCTION_SIGNATURES:
             signature = SWAIG_FUNCTION_SIGNATURES[func].copy()
             signature["web_hook_url"] = f"{webhook_url}/swaig"
+            signature["web_hook_auth_password"] = HTTP_PASSWORD
+            signature["web_hook_auth_user"] = HTTP_USERNAME
             signatures.append(signature)
 
     return signatures
@@ -226,7 +228,7 @@ def get_reservations_table_html():
     return table_html
 
 @app.route('/swaig', methods=['POST'])
-@auth.login_required
+@auth.verify_password
 def swaig_handler():
     data = request.json
     action = data.get('action')
@@ -261,4 +263,5 @@ def serve_reservation_html():
         return jsonify({"error": "Failed to serve HTML"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True) 
+    port = os.getenv("PORT")
+    app.run(host="0.0.0.0", port=5001, debug=True) 
