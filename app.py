@@ -27,6 +27,7 @@ HTTP_PASSWORD = os.getenv("HTTP_PASSWORD")
 
 @auth.verify_password
 def verify_password(username, password):
+    print(f"Verifying password for {username} and {password}")
     if username == HTTP_USERNAME and password == HTTP_PASSWORD:
         return True
     return False
@@ -232,7 +233,7 @@ def get_reservations_table_html():
     return table_html
 
 @app.route('/swaig', methods=['POST'])
-@auth.verify_password
+@auth.login_required
 def swaig_handler():
     data = request.json
     action = data.get('action')
@@ -280,5 +281,5 @@ def serve_reservation_html():
         return jsonify({"error": "Failed to serve HTML"}), 500
 
 if __name__ == "__main__":
-    port = os.getenv("PORT", 5000)
+    port = os.getenv("PORT", 5001)
     app.run(host="0.0.0.0", port=port, debug=True) 
