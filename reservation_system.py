@@ -43,7 +43,7 @@ def create_reservation(data: dict) -> dict:
         }
 
         return {
-            "response": f"Reservation successfully created for {name} - {party_size} people on {date} at {time}. Contact: {phone_number}"
+            "response": f"Reservation successfully created."
         }
 
     except KeyError as e:
@@ -117,7 +117,7 @@ def cancel_reservation(data: dict) -> dict:
             reservation = reservations[phone_number]
             del reservations[phone_number]
             return {
-                "response": f"Reservation canceled for {reservation['name']} on {reservation['date']} at {reservation['time']}. Contact: {phone_number}"
+                "response": f"Reservation canceled successfully."
             }
         return {"response": "No reservation found for this phone number."}
 
@@ -147,7 +147,7 @@ def move_reservation(data: dict) -> dict:
             reservation["time"] = new_time
             
             return {
-                "response": f"Reservation for {reservation['name']} moved from {old_date} at {old_time} to {new_date} at {new_time}. Contact: {phone_number}"
+                "response": f"Reservation moved successfully."
             }
         return {"response": "No reservation found for this phone number."}
 
