@@ -244,8 +244,7 @@ def swaig_handler():
     result, status_code = execute_function(function_name, params)
     return jsonify(result), status_code
 
-@app.route('/')
-@app.route('/swaig', methods=['GET'])
+@app.route('/', methods=['GET'])
 def serve_reservation_html():
     try:
         # Read the HTML file from the static directory
