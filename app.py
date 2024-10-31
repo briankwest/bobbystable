@@ -248,18 +248,32 @@ def swaig_handler():
     result, status_code = execute_function(function_name, params)
     return jsonify(result), status_code
 
+GOOGLE_TAG = os.getenv("GOOGLE_TAG")
+
 @app.route('/', methods=['GET'])
 def serve_reservation_html():
     try:
-        # Read the HTML file from the static directory
         with open('static/reservation.html', 'r') as file:
             html_content = file.read()
         
-        # Generate the reservations table
         reservations_table = get_reservations_table_html()
         
         # Replace placeholders with actual data
         html_content = html_content.replace("{{reservations_table}}", reservations_table)
+        
+        # Insert Google Tag Manager script if the tag is available
+        if GOOGLE_TAG:
+            gtm_script = f"""
+            <script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_TAG}"></script>
+            <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){{dataLayer.push(arguments);}}
+              gtag('js', new Date());
+              gtag('config', '{GOOGLE_TAG}');
+            </script>
+            """
+            # Insert the GTM script before the closing </head> tag
+            html_content = html_content.replace("</head>", f"{gtm_script}</head>")
         
         return html_content
     except Exception as e:
