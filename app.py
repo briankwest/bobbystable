@@ -1,20 +1,23 @@
 from flask import Flask, request, jsonify
 from flask_httpauth import HTTPBasicAuth
 from urllib.parse import urlsplit, urlunsplit
+from dotenv import load_dotenv
 import os
+
 from reservation_system import (
     create_reservation,
     get_reservation,
     update_reservation,
     cancel_reservation,
-    move_reservation,
-    reservations
+    move_reservation
 )
 import random
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 app.static_folder = os.path.abspath('static')
+
+load_dotenv()
 
 # Authentication setup
 auth = HTTPBasicAuth()
@@ -262,5 +265,5 @@ def serve_reservation_html():
         return jsonify({"error": "Failed to serve HTML"}), 500
 
 if __name__ == "__main__":
-    port = os.getenv("PORT")
-    app.run(host="0.0.0.0", port=5000, debug=True) 
+    port = os.getenv("PORT", 5000)
+    app.run(host="0.0.0.0", port=port, debug=True) 
