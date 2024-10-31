@@ -7,11 +7,14 @@ from reservation_system import (
     get_reservation,
     update_reservation,
     cancel_reservation,
-    move_reservation
+    move_reservation,
+    reservations
 )
+import random
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+app.static_folder = os.path.abspath('static')
 
 # Authentication setup
 auth = HTTPBasicAuth()
@@ -187,6 +190,41 @@ def execute_function(function_name: str, params: dict) -> dict:
     except Exception as e:
         return {"error": str(e)}, 500
 
+def scramble_phone_number(phone):
+    if not phone or len(phone) < 6:
+        return phone
+    return phone[:-6] + ''.join(random.choices('0123456789', k=6))
+
+def get_reservations_table_html():
+    if not reservations:
+        return "<p>No reservations yet.</p>"
+    
+    table_html = """
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Party Size</th>
+        </tr>
+    """
+    
+    for phone, details in reservations.items():
+        scrambled = scramble_phone_number(phone)
+        table_html += f"""
+        <tr>
+            <td>{details['name']}</td>
+            <td>{scrambled}</td>
+            <td>{details['date']}</td>
+            <td>{details['time']}</td>
+            <td>{details['party_size']}</td>
+        </tr>
+        """
+    
+    table_html += "</table>"
+    return table_html
+
 @app.route('/swaig', methods=['POST'])
 @auth.login_required
 def swaig_handler():
@@ -208,19 +246,19 @@ def swaig_handler():
 @app.route('/swaig', methods=['GET'])
 def serve_reservation_html():
     try:
-        return """
-        <html>
-            <head>
-                <title>Bobby's Table Reservation System</title>
-            </head>
-            <body>
-                <h1>Bobby's Table Reservation System</h1>
-                <p>This is a SWAIG-based reservation system. Please use the API endpoints to interact with the system.</p>
-            </body>
-        </html>
-        """
+        # Read the HTML file from the static directory
+        with open('static/reservation.html', 'r') as file:
+            html_content = file.read()
+        
+        # Generate the reservations table
+        reservations_table = get_reservations_table_html()
+        
+        # Replace placeholders with actual data
+        html_content = html_content.replace("{{reservations_table}}", reservations_table)
+        
+        return html_content
     except Exception as e:
         return jsonify({"error": "Failed to serve HTML"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True) 
+    app.run(host="0.0.0.0", port=5000, debug=True) 

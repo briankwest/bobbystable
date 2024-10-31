@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Bobby's Table</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                text-align: center;
+            }
+            .logo {
+                max-width: 300px;
+                margin: 20px auto;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th, td {
+                padding: 8px;
+                border: 1px solid #ddd;
+            }
+            th {
+                background-color: #f4f4f4;
+            }
+            .contact-info {
+                margin: 20px 0;
+            }
+            a {
+                color: #0066cc;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <img src="static/img/bobbystable.png" alt="Bobby's Table Logo" class="logo">
+        <h1>Bobby's Table</h1>
+        <div class="contact-info">
+            <p>327 Drop Table Lane</p>
+            <p>Pompano Beach, FL 33060</p>
+            <p>For Reservations Call:</p>
+            <p><a href="tel:+17544326229">+1 (754) 43-BOBBY</a></p>
+        </div>
+        <div class="reservations-container">
+            <h2>Current Reservations</h2>
+            {{reservations_table}}
+        </div>
+    </body>
+</html> 
