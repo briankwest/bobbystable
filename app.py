@@ -27,7 +27,6 @@ HTTP_PASSWORD = os.getenv("HTTP_PASSWORD")
 
 @auth.verify_password
 def verify_password(username, password):
-    print(f"Verifying password for {username} and {password}")
     if username == HTTP_USERNAME and password == HTTP_PASSWORD:
         return True
     return False
