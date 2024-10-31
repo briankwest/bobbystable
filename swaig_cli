@@ -57,6 +57,12 @@ def test_function(url, function_names, args):
         if not function_signature:
             print(f"Error: Function {function_names} not found in signatures")
             sys.exit(1)
+        # Backwards compatibility for older function signatures
+        if 'parameters' not in function_signature and 'argument' in function_signature:
+            function_signature['parameters'] = function_signature['argument']
+            
+        if 'description' not in function_signature and 'purpose' in function_signature:
+            function_signature['description'] = function_signature['purpose']
 
         required_args = function_signature['parameters']['required']
         properties = function_signature['parameters']['properties']

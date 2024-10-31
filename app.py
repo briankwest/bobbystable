@@ -156,6 +156,9 @@ def get_function_signatures(requested_functions, host_url):
         netloc = f"{HTTP_USERNAME}:{HTTP_PASSWORD}@{split_url.netloc}"
     else:
         netloc = split_url.netloc
+        
+    if split_url.scheme != 'https':
+        split_url = split_url._replace(scheme='https')
 
     # Construct webhook URL
     webhook_url = urlunsplit((
