@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_httpauth import HTTPBasicAuth
-from urllib.parse import urlsplit, urlunsplit
 from dotenv import load_dotenv
 import os
+from signalwire_swaig.core import SWAIG, Parameter
 
 from reservation_system import (
     create_reservation,
@@ -27,177 +27,71 @@ HTTP_PASSWORD = os.getenv("HTTP_PASSWORD")
 
 @auth.verify_password
 def verify_password(username, password):
-    if username == HTTP_USERNAME and password == HTTP_PASSWORD:
-        return True
-    return False
+    return username == HTTP_USERNAME and password == HTTP_PASSWORD
 
-# SWAIG function signatures
-SWAIG_FUNCTION_SIGNATURES = {
-    "create_reservation": {
-        "purpose": "Create a new reservation for a customer",
-        "function": "create_reservation",
-        "argument": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "The name of the person making the reservation"
-                },
-                "party_size": {
-                    "type": "integer",
-                    "description": "Number of people in the party"
-                },
-                "date": {
-                    "type": "string",
-                    "description": "Date of reservation in YYYY-MM-DD format"
-                },
-                "time": {
-                    "type": "string",
-                    "description": "Time of reservation in HH:MM format (24-hour)"
-                },
-                "phone_number": {
-                    "type": "string",
-                    "description": "Contact phone number in E.164 format (e.g., +19185551234)"
-                }
-            },
-            "required": ["name", "party_size", "date", "time", "phone_number"]
-        }
-    },
-    "get_reservation": {
-        "purpose": "Retrieve an existing reservation",
-        "function": "get_reservation",
-        "argument": {
-            "type": "object",
-            "properties": {
-                "phone_number": {
-                    "type": "string",
-                    "description": "Phone number used for the reservation in E.164 format"
-                }
-            },
-            "required": ["phone_number"]
-        }
-    },
-    "update_reservation": {
-        "purpose": "Update an existing reservation",
-        "function": "update_reservation",
-        "argument": {
-            "type": "object",
-            "properties": {
-                "phone_number": {
-                    "type": "string",
-                    "description": "Phone number of the existing reservation"
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Updated name (optional)"
-                },
-                "party_size": {
-                    "type": "integer",
-                    "description": "Updated party size (optional)"
-                },
-                "date": {
-                    "type": "string",
-                    "description": "Updated date in YYYY-MM-DD format (optional)"
-                },
-                "time": {
-                    "type": "string",
-                    "description": "Updated time in HH:MM format (optional)"
-                }
-            },
-            "required": ["phone_number"]
-        }
-    },
-    "cancel_reservation": {
-        "purpose": "Cancel an existing reservation",
-        "function": "cancel_reservation",
-        "argument": {
-            "type": "object",
-            "properties": {
-                "phone_number": {
-                    "type": "string",
-                    "description": "Phone number of the reservation to cancel"
-                }
-            },
-            "required": ["phone_number"]
-        }
-    },
-    "move_reservation": {
-        "purpose": "Move an existing reservation to a new date and time",
-        "function": "move_reservation",
-        "argument": {
-            "type": "object",
-            "properties": {
-                "phone_number": {
-                    "type": "string",
-                    "description": "Phone number of the existing reservation"
-                },
-                "new_date": {
-                    "type": "string",
-                    "description": "New date in YYYY-MM-DD format"
-                },
-                "new_time": {
-                    "type": "string",
-                    "description": "New time in HH:MM format"
-                }
-            },
-            "required": ["phone_number", "new_date", "new_time"]
-        }
-    }
-}
+# Initialize SWAIG
+swaig = SWAIG(app, auth=(HTTP_USERNAME, HTTP_PASSWORD))
 
-def get_function_signatures(requested_functions, host_url):
-    if not requested_functions:
-        requested_functions = list(SWAIG_FUNCTION_SIGNATURES.keys())
+@swaig.endpoint(
+    description="Create a new reservation for a customer",
+    name=Parameter(type="string", description="The name of the person making the reservation"),
+    party_size=Parameter(type="integer", description="Number of people in the party"),
+    date=Parameter(type="string", description="Date of reservation in YYYY-MM-DD format"),
+    time=Parameter(type="string", description="Time of reservation in HH:MM format (24-hour)"),
+    phone_number=Parameter(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)")
+)
+def create_reservation_endpoint(name, party_size, date, time, phone_number):
+    return create_reservation({
+        "name": name,
+        "party_size": party_size,
+        "date": date,
+        "time": time,
+        "phone_number": phone_number
+    })
 
-    split_url = urlsplit(host_url.rstrip('/'))
-    
-    # Add authentication to URL if credentials exist
-    if HTTP_USERNAME and HTTP_PASSWORD:
-        netloc = f"{HTTP_USERNAME}:{HTTP_PASSWORD}@{split_url.netloc}"
-    else:
-        netloc = split_url.netloc
-        
-    if split_url.scheme != 'https':
-        split_url = split_url._replace(scheme='https')
+@swaig.endpoint(
+    description="Retrieve an existing reservation",
+    phone_number=Parameter(type="string", description="Phone number used for the reservation in E.164 format")
+)
+def get_reservation_endpoint(phone_number):
+    return get_reservation({"phone_number": phone_number})
 
-    # Construct webhook URL
-    webhook_url = urlunsplit((
-        split_url.scheme,
-        netloc,
-        split_url.path,
-        split_url.query,
-        split_url.fragment
-    ))
+@swaig.endpoint(
+    description="Update an existing reservation",
+    phone_number=Parameter(type="string", description="Phone number of the existing reservation"),
+    name=Parameter(type="string", description="Updated name (optional)", required=False),
+    party_size=Parameter(type="integer", description="Updated party size (optional)", required=False),
+    date=Parameter(type="string", description="Updated date in YYYY-MM-DD format (optional)", required=False),
+    time=Parameter(type="string", description="Updated time in HH:MM format (optional)", required=False)
+)
+def update_reservation_endpoint(phone_number, name=None, party_size=None, date=None, time=None):
+    return update_reservation({
+        "phone_number": phone_number,
+        "name": name,
+        "party_size": party_size,
+        "date": date,
+        "time": time
+    })
 
-    # Add webhook URL to each function signature
-    signatures = []
-    for func in requested_functions:
-        if func in SWAIG_FUNCTION_SIGNATURES:
-            signature = SWAIG_FUNCTION_SIGNATURES[func].copy()
-            signature["web_hook_url"] = f"{webhook_url}/swaig"
-            signature["web_hook_auth_password"] = HTTP_PASSWORD
-            signature["web_hook_auth_user"] = HTTP_USERNAME
-            signatures.append(signature)
+@swaig.endpoint(
+    description="Cancel an existing reservation",
+    phone_number=Parameter(type="string", description="Phone number of the reservation to cancel")
+)
+def cancel_reservation_endpoint(phone_number):
+    return cancel_reservation({"phone_number": phone_number})
 
-    return signatures
-
-def execute_function(function_name: str, params: dict) -> dict:
-    function_map = {
-        "create_reservation": create_reservation,
-        "get_reservation": get_reservation,
-        "update_reservation": update_reservation,
-        "cancel_reservation": cancel_reservation,
-        "move_reservation": move_reservation
-    }
-
-    if function_name not in function_map:
-        return {"error": "Function not found"}, 404
-
-    try:
-        result = function_map[function_name](params)
-        return {"response": result["response"]}, 200
-    except Exception as e:
-        return {"error": str(e)}, 500
+@swaig.endpoint(
+    description="Move an existing reservation to a new date and time",
+    phone_number=Parameter(type="string", description="Phone number of the existing reservation"),
+    new_date=Parameter(type="string", description="New date in YYYY-MM-DD format"),
+    new_time=Parameter(type="string", description="New time in HH:MM format")
+)
+def move_reservation_endpoint(phone_number, new_date, new_time):
+    return move_reservation({
+        "phone_number": phone_number,
+        "new_date": new_date,
+        "new_time": new_time
+    })
 
 def scramble_phone_number(phone):
     if not phone or len(phone) < 6:
@@ -234,25 +128,6 @@ def get_reservations_table_html():
     table_html += "</table>"
     return table_html
 
-@app.route('/swaig', methods=['POST'])
-@auth.login_required
-def swaig_handler():
-    data = request.json
-    action = data.get('action')
-
-    if action == "get_signature":
-        requested_functions = data.get("functions", [])
-        signatures = get_function_signatures(requested_functions, request.host_url)
-        return jsonify(signatures)
-
-    function_name = data.get('function')
-    params = data.get('argument', {}).get('parsed', [{}])[0]
-    
-    result, status_code = execute_function(function_name, params)
-    return jsonify(result), status_code
-
-GOOGLE_TAG = os.getenv("GOOGLE_TAG")
-
 @app.route('/', methods=['GET'])
 def serve_reservation_html():
     try:
@@ -265,6 +140,7 @@ def serve_reservation_html():
         html_content = html_content.replace("{{reservations_table}}", reservations_table)
         
         # Insert Google Tag Manager script if the tag is available
+        GOOGLE_TAG = os.getenv("GOOGLE_TAG")
         if GOOGLE_TAG:
             gtm_script = f"""
             <script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_TAG}"></script>
@@ -284,4 +160,4 @@ def serve_reservation_html():
 
 if __name__ == "__main__":
     port = os.getenv("PORT", 5001)
-    app.run(host="0.0.0.0", port=port, debug=True) 
+    app.run(host="0.0.0.0", port=port, debug=True)
