@@ -40,7 +40,7 @@ swaig = SWAIG(app, auth=(HTTP_USERNAME, HTTP_PASSWORD))
     time=Parameter(type="string", description="Time of reservation in HH:MM format (24-hour)"),
     phone_number=Parameter(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)")
 )
-def create_reservation_endpoint(name, party_size, date, time, phone_number):
+def create_reservation_endpoint(name, party_size, date, time, phone_number, meta_data_token=None, meta_data=None):
     return create_reservation({
         "name": name,
         "party_size": party_size,
@@ -53,7 +53,7 @@ def create_reservation_endpoint(name, party_size, date, time, phone_number):
     description="Retrieve an existing reservation",
     phone_number=Parameter(type="string", description="Phone number used for the reservation in E.164 format")
 )
-def get_reservation_endpoint(phone_number):
+def get_reservation_endpoint(phone_number, meta_data_token=None, meta_data=None):
     return get_reservation({"phone_number": phone_number})
 
 @swaig.endpoint(
@@ -64,7 +64,7 @@ def get_reservation_endpoint(phone_number):
     date=Parameter(type="string", description="Updated date in YYYY-MM-DD format (optional)", required=False),
     time=Parameter(type="string", description="Updated time in HH:MM format (optional)", required=False)
 )
-def update_reservation_endpoint(phone_number, name=None, party_size=None, date=None, time=None):
+def update_reservation_endpoint(phone_number, name=None, party_size=None, date=None, time=None, meta_data_token=None, meta_data=None):
     return update_reservation({
         "phone_number": phone_number,
         "name": name,
@@ -86,7 +86,7 @@ def cancel_reservation_endpoint(phone_number):
     new_date=Parameter(type="string", description="New date in YYYY-MM-DD format"),
     new_time=Parameter(type="string", description="New time in HH:MM format")
 )
-def move_reservation_endpoint(phone_number, new_date, new_time):
+def move_reservation_endpoint(phone_number, new_date, new_time, meta_data_token=None, meta_data=None):
     return move_reservation({
         "phone_number": phone_number,
         "new_date": new_date,

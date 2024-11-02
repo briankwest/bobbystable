@@ -220,161 +220,64 @@ reservations = {
 Here’s the Python code for each function to provide a `response` field containing a human-readable statement for LLM consumption.
 
 ```python
-import uuid
-from datetime import datetime
-from typing import Dict, Optional
+@swaig.endpoint(
+    description="Create a new reservation for a customer",
+    name=Parameter(type="string", description="The name of the person making the reservation"),
+    party_size=Parameter(type="integer", description="Number of people in the party"),
+    date=Parameter(type="string", description="Date of reservation in YYYY-MM-DD format"),
+    time=Parameter(type="string", description="Time of reservation in HH:MM format (24-hour)"),
+    phone_number=Parameter(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)")
+)
+def create_reservation_endpoint(name, party_size, date, time, phone_number, meta_data_token=None, meta_data=None):
+    return create_reservation({
+        "name": name,
+        "party_size": party_size,
+        "date": date,
+        "time": time,
+        "phone_number": phone_number
+    })
 
-# Mock reservation data storage
-reservations: Dict[str, dict] = {}
+@swaig.endpoint(
+    description="Retrieve an existing reservation",
+    phone_number=Parameter(type="string", description="Phone number used for the reservation in E.164 format")
+)
+def get_reservation_endpoint(phone_number, meta_data_token=None, meta_data=None):
+    return get_reservation({"phone_number": phone_number})
 
-def validate_date_time(date_str: str, time_str: str) -> bool:
-    try:
-        datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-        return True
-    except ValueError:
-        return False
+@swaig.endpoint(
+    description="Update an existing reservation",
+    phone_number=Parameter(type="string", description="Phone number of the existing reservation"),
+    name=Parameter(type="string", description="Updated name (optional)", required=False),
+    party_size=Parameter(type="integer", description="Updated party size (optional)", required=False),
+    date=Parameter(type="string", description="Updated date in YYYY-MM-DD format (optional)", required=False),
+    time=Parameter(type="string", description="Updated time in HH:MM format (optional)", required=False)
+)
+def update_reservation_endpoint(phone_number, name=None, party_size=None, date=None, time=None, meta_data_token=None, meta_data=None):
+    return update_reservation({
+        "phone_number": phone_number,
+        "name": name,
+        "party_size": party_size,
+        "date": date,
+        "time": time
+    })
 
-def validate_phone_number(phone_number: str) -> bool:
-    return phone_number.startswith("+") and len(phone_number) >= 10
+@swaig.endpoint(
+    description="Cancel an existing reservation",
+    phone_number=Parameter(type="string", description="Phone number of the reservation to cancel")
+)
+def cancel_reservation_endpoint(phone_number):
+    return cancel_reservation({"phone_number": phone_number})
 
-def create_reservation(data: dict) -> dict:
-    try:
-        name = data["name"]
-        party_size = int(data["party_size"])
-        date = data["date"]
-        time = data["time"]
-        phone_number = data["phone_number"]
-
-        if not validate_phone_number(phone_number):
-            return {"response": "Invalid phone number format. Please use E.164 format (e.g., +19185551234)."}
-
-        if party_size < 1:
-            return {"response": "Party size must be at least 1 person."}
-
-        if not validate_date_time(date, time):
-            return {"response": "Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time."}
-
-        if phone_number in reservations:
-            return {"response": "A reservation already exists for this phone number."}
-
-        reservations[phone_number] = {
-            "name": name,
-            "party_size": party_size,
-            "date": date,
-            "time": time
-        }
-
-        return {
-            "response": f"Reservation successfully created for {name} - {party_size} people on {date} at {time}. Contact: {phone_number}"
-        }
-
-    except KeyError as e:
-        return {"response": f"Missing required field: {str(e)}"}
-    except Exception as e:
-        return {"response": f"Error creating reservation: {str(e)}"}
-
-def get_reservation(data: dict) -> dict:
-    try:
-        phone_number = data["phone_number"]
-        
-        if not validate_phone_number(phone_number):
-            return {"response": "Invalid phone number format. Please use E.164 format (e.g., +19185551234)."}
-
-        reservation = reservations.get(phone_number)
-        if reservation:
-            return {
-                "response": f"Reservation found: {reservation['name']} for {reservation['party_size']} people on {reservation['date']} at {reservation['time']}. Contact: {phone_number}"
-            }
-        return {"response": "No reservation found for this phone number."}
-
-    except KeyError:
-        return {"response": "Phone number is required."}
-    except Exception as e:
-        return {"response": f"Error retrieving reservation: {str(e)}"}
-
-def update_reservation(data: dict) -> dict:
-    try:
-        phone_number = data["phone_number"]
-        
-        if not validate_phone_number(phone_number):
-            return {"response": "Invalid phone number format. Please use E.164 format (e.g., +19185551234)."}
-
-        if phone_number not in reservations:
-            return {"response": "No reservation found for this phone number."}
-
-        current_reservation = reservations[phone_number]
-        
-        if "date" in data and "time" in data:
-            if not validate_date_time(data["date"], data["time"]):
-                return {"response": "Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time."}
-
-        if "party_size" in data and int(data["party_size"]) < 1:
-            return {"response": "Party size must be at least 1 person."}
-
-        updated_reservation = {
-            "name": data.get("name", current_reservation["name"]),
-            "party_size": int(data.get("party_size", current_reservation["party_size"])),
-            "date": data.get("date", current_reservation["date"]),
-            "time": data.get("time", current_reservation["time"])
-        }
-
-        reservations[phone_number] = updated_reservation
-        return {
-            "response": f"Reservation updated: {updated_reservation['name']} for {updated_reservation['party_size']} people on {updated_reservation['date']} at {updated_reservation['time']}. Contact: {phone_number}"
-        }
-
-    except KeyError:
-        return {"response": "Phone number is required."}
-    except Exception as e:
-        return {"response": f"Error updating reservation: {str(e)}"}
-
-def cancel_reservation(data: dict) -> dict:
-    try:
-        phone_number = data["phone_number"]
-        
-        if not validate_phone_number(phone_number):
-            return {"response": "Invalid phone number format. Please use E.164 format (e.g., +19185551234)."}
-
-        if phone_number in reservations:
-            reservation = reservations[phone_number]
-            del reservations[phone_number]
-            return {
-                "response": f"Reservation canceled for {reservation['name']} on {reservation['date']} at {reservation['time']}. Contact: {phone_number}"
-            }
-        return {"response": "No reservation found for this phone number."}
-
-    except KeyError:
-        return {"response": "Phone number is required."}
-    except Exception as e:
-        return {"response": f"Error canceling reservation: {str(e)}"}
-
-def move_reservation(data: dict) -> dict:
-    try:
-        phone_number = data["phone_number"]
-        new_date = data["new_date"]
-        new_time = data["new_time"]
-        
-        if not validate_phone_number(phone_number):
-            return {"response": "Invalid phone number format. Please use E.164 format (e.g., +19185551234)."}
-
-        if not validate_date_time(new_date, new_time):
-            return {"response": "Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time."}
-
-        if phone_number in reservations:
-            reservation = reservations[phone_number]
-            old_date = reservation["date"]
-            old_time = reservation["time"]
-            
-            reservation["date"] = new_date
-            reservation["time"] = new_time
-            
-            return {
-                "response": f"Reservation for {reservation['name']} moved from {old_date} at {old_time} to {new_date} at {new_time}. Contact: {phone_number}"
-            }
-        return {"response": "No reservation found for this phone number."}
-
-    except KeyError as e:
-        return {"response": f"Missing required field: {str(e)}"}
-    except Exception as e:
-        return {"response": f"Error moving reservation: {str(e)}"} 
+@swaig.endpoint(
+    description="Move an existing reservation to a new date and time",
+    phone_number=Parameter(type="string", description="Phone number of the existing reservation"),
+    new_date=Parameter(type="string", description="New date in YYYY-MM-DD format"),
+    new_time=Parameter(type="string", description="New time in HH:MM format")
+)
+def move_reservation_endpoint(phone_number, new_date, new_time, meta_data_token=None, meta_data=None):
+    return move_reservation({
+        "phone_number": phone_number,
+        "new_date": new_date,
+        "new_time": new_time
+    })
 ```
