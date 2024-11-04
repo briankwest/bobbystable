@@ -34,11 +34,11 @@ swaig = SWAIG(app, auth=(HTTP_USERNAME, HTTP_PASSWORD))
 
 @swaig.endpoint(
     description="Create a new reservation for a customer",
-    name=Parameter(type="string", description="The name of the person making the reservation"),
-    party_size=Parameter(type="integer", description="Number of people in the party"),
-    date=Parameter(type="string", description="Date of reservation in YYYY-MM-DD format"),
-    time=Parameter(type="string", description="Time of reservation in HH:MM format (24-hour)"),
-    phone_number=Parameter(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)")
+    name=Parameter(type="string", description="The name of the person making the reservation", required=True),
+    party_size=Parameter(type="integer", description="Number of people in the party", required=True),
+    date=Parameter(type="string", description="Date of reservation in YYYY-MM-DD format", required=True),
+    time=Parameter(type="string", description="Time of reservation in HH:MM format (24-hour)", required=True),
+    phone_number=Parameter(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)", required=True)
 )
 def create_reservation_endpoint(name, party_size, date, time, phone_number, meta_data_token=None, meta_data=None):
     return create_reservation({
@@ -51,18 +51,18 @@ def create_reservation_endpoint(name, party_size, date, time, phone_number, meta
 
 @swaig.endpoint(
     description="Retrieve an existing reservation",
-    phone_number=Parameter(type="string", description="Phone number used for the reservation in E.164 format")
+    phone_number=Parameter(type="string", description="Phone number used for the reservation in E.164 format", required=True)
 )
 def get_reservation_endpoint(phone_number, meta_data_token=None, meta_data=None):
     return get_reservation({"phone_number": phone_number})
 
 @swaig.endpoint(
     description="Update an existing reservation",
-    phone_number=Parameter(type="string", description="Phone number of the existing reservation"),
-    name=Parameter(type="string", description="Updated name (optional)", required=False),
-    party_size=Parameter(type="integer", description="Updated party size (optional)", required=False),
-    date=Parameter(type="string", description="Updated date in YYYY-MM-DD format (optional)", required=False),
-    time=Parameter(type="string", description="Updated time in HH:MM format (optional)", required=False)
+    phone_number=Parameter(type="string", description="Phone number of the existing reservation", required=True),
+    name=Parameter(type="string", description="Updated name (optional)", required=True),
+    party_size=Parameter(type="integer", description="Updated party size (optional)", required=True),
+    date=Parameter(type="string", description="Updated date in YYYY-MM-DD format (optional)", required=True),
+    time=Parameter(type="string", description="Updated time in HH:MM format (optional)", required=True)
 )
 def update_reservation_endpoint(phone_number, name=None, party_size=None, date=None, time=None, meta_data_token=None, meta_data=None):
     return update_reservation({
@@ -75,16 +75,16 @@ def update_reservation_endpoint(phone_number, name=None, party_size=None, date=N
 
 @swaig.endpoint(
     description="Cancel an existing reservation",
-    phone_number=Parameter(type="string", description="Phone number of the reservation to cancel")
+    phone_number=Parameter(type="string", description="Phone number of the reservation to cancel", required=True)
 )
 def cancel_reservation_endpoint(phone_number):
     return cancel_reservation({"phone_number": phone_number})
 
 @swaig.endpoint(
     description="Move an existing reservation to a new date and time",
-    phone_number=Parameter(type="string", description="Phone number of the existing reservation"),
-    new_date=Parameter(type="string", description="New date in YYYY-MM-DD format"),
-    new_time=Parameter(type="string", description="New time in HH:MM format")
+    phone_number=Parameter(type="string", description="Phone number of the existing reservation", required=True),
+    new_date=Parameter(type="string", description="New date in YYYY-MM-DD format", required=True),
+    new_time=Parameter(type="string", description="New time in HH:MM format", required=True)
 )
 def move_reservation_endpoint(phone_number, new_date, new_time, meta_data_token=None, meta_data=None):
     return move_reservation({
