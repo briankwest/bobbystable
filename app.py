@@ -14,6 +14,9 @@ from reservation_system import (
 )
 import random
 
+if os.getenv("DEBUG", False):
+    os.environ['WERKZEUG_DEBUG_PIN'] = f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(100, 999)}"
+
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 app.static_folder = os.path.abspath('static')
@@ -159,5 +162,4 @@ def serve_reservation_html():
         return jsonify({"error": "Failed to serve HTML"}), 500
 
 if __name__ == "__main__":
-    port = os.getenv("PORT", 5001)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=os.getenv("PORT", 5001), debug=os.getenv("DEBUG"))
