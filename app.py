@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify
-from flask_httpauth import HTTPBasicAuth
+from flask import Flask, jsonify
 from dotenv import load_dotenv
+import logging
 import os
 from signalwire_swaig.core import SWAIG, SWAIGArgument
 
@@ -14,26 +14,25 @@ from reservation_system import (
 )
 import random
 
-if os.getenv("DEBUG", False):
-    os.environ['WERKZEUG_DEBUG_PIN'] = f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(100, 999)}"
+logging.getLogger('werkzeug').setLevel(logging.WARNING)
+
+if os.environ.get('DEBUG'):
+    print("Debug mode is enabled")
+    debug_pin = f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(100, 999)}"
+    os.environ['WERKZEUG_DEBUG_PIN'] = debug_pin
+    logging.getLogger('werkzeug').setLevel(logging.DEBUG)
+    print(f"Debugger PIN: {debug_pin}")
+
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 app.static_folder = os.path.abspath('static')
-
-load_dotenv()
-
-# Authentication setup
-auth = HTTPBasicAuth()
-HTTP_USERNAME = os.getenv("HTTP_USERNAME")
-HTTP_PASSWORD = os.getenv("HTTP_PASSWORD")
-
-@auth.verify_password
-def verify_password(username, password):
-    return username == HTTP_USERNAME and password == HTTP_PASSWORD
-
-# Initialize SWAIG
-swaig = SWAIG(app, auth=(HTTP_USERNAME, HTTP_PASSWORD))
+swaig = SWAIG(
+    app,
+    auth=(os.getenv('HTTP_USERNAME'), os.getenv('HTTP_PASSWORD'))
+)
 
 @swaig.endpoint(
     description="Create a new reservation for a customer",
@@ -154,7 +153,6 @@ def serve_reservation_html():
               gtag('config', '{GOOGLE_TAG}');
             </script>
             """
-            # Insert the GTM script before the closing </head> tag
             html_content = html_content.replace("</head>", f"{gtm_script}</head>")
         
         return html_content
