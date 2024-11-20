@@ -42,7 +42,7 @@ swaig = SWAIG(
     time=SWAIGArgument(type="string", description="Time of reservation in HH:MM format (24-hour)", required=True),
     phone_number=SWAIGArgument(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)", required=True)
 )
-def create_reservation_endpoint(name, party_size, date, time, phone_number, meta_data_token=None, meta_data=None):
+def create_reservation(name, party_size, date, time, phone_number, meta_data_token=None, meta_data=None):
     return create_reservation({
         "name": name,
         "party_size": party_size,
@@ -55,7 +55,7 @@ def create_reservation_endpoint(name, party_size, date, time, phone_number, meta
     description="Retrieve an existing reservation",
     phone_number=SWAIGArgument(type="string", description="Phone number used for the reservation in E.164 format", required=True)
 )
-def get_reservation_endpoint(phone_number, meta_data_token=None, meta_data=None):
+def get_reservation(phone_number, meta_data_token=None, meta_data=None):
     return get_reservation({"phone_number": phone_number})
 
 @swaig.endpoint(
@@ -66,7 +66,7 @@ def get_reservation_endpoint(phone_number, meta_data_token=None, meta_data=None)
     date=SWAIGArgument(type="string", description="Updated date in YYYY-MM-DD format (optional)", required=True),
     time=SWAIGArgument(type="string", description="Updated time in HH:MM format (optional)", required=True)
 )
-def update_reservation_endpoint(phone_number, name=None, party_size=None, date=None, time=None, meta_data_token=None, meta_data=None):
+def update_reservation(phone_number, name=None, party_size=None, date=None, time=None, meta_data_token=None, meta_data=None):
     return update_reservation({
         "phone_number": phone_number,
         "name": name,
@@ -79,7 +79,7 @@ def update_reservation_endpoint(phone_number, name=None, party_size=None, date=N
     description="Cancel an existing reservation",
     phone_number=SWAIGArgument(type="string", description="Phone number of the reservation to cancel", required=True)
 )
-def cancel_reservation_endpoint(phone_number):
+def cancel_reservation(phone_number):
     return cancel_reservation({"phone_number": phone_number})
 
 @swaig.endpoint(
@@ -88,7 +88,7 @@ def cancel_reservation_endpoint(phone_number):
     new_date=SWAIGArgument(type="string", description="New date in YYYY-MM-DD format", required=True),
     new_time=SWAIGArgument(type="string", description="New time in HH:MM format", required=True)
 )
-def move_reservation_endpoint(phone_number, new_date, new_time, meta_data_token=None, meta_data=None):
+def move_reservation(phone_number, new_date, new_time, meta_data_token=None, meta_data=None):
     return move_reservation({
         "phone_number": phone_number,
         "new_date": new_date,
