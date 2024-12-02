@@ -15,7 +15,7 @@ def validate_date_time(date_str: str, time_str: str) -> bool:
 def validate_phone_number(phone_number: str) -> bool:
     return phone_number.startswith("+") and len(phone_number) >= 10
 
-def create_reservation(data: dict) -> dict:
+def create_reservation_response(data: dict) -> str:
     try:
         name = data["name"]
         party_size = int(data["party_size"])
@@ -49,7 +49,7 @@ def create_reservation(data: dict) -> dict:
     except Exception as e:
         return f"Error creating reservation: {str(e)}"
 
-def get_reservation(data: dict) -> dict:
+def get_reservation_response(data: dict) -> str:
     try:
         phone_number = data["phone_number"]
         
@@ -66,7 +66,7 @@ def get_reservation(data: dict) -> dict:
     except Exception as e:
         return f"Error retrieving reservation: {str(e)}"
 
-def update_reservation(data: dict) -> dict:
+def update_reservation_response(data: dict) -> str:
     try:
         phone_number = data["phone_number"]
         
@@ -100,7 +100,7 @@ def update_reservation(data: dict) -> dict:
     except Exception as e:
         return f"Error updating reservation: {str(e)}"
 
-def cancel_reservation(data: dict) -> dict:
+def cancel_reservation_response(data: dict) -> str:
     try:
         phone_number = data["phone_number"]
         
@@ -118,7 +118,7 @@ def cancel_reservation(data: dict) -> dict:
     except Exception as e:
         return f"Error canceling reservation: {str(e)}"
 
-def move_reservation(data: dict) -> dict:
+def move_reservation_response(data: dict) -> str:
     try:
         phone_number = data["phone_number"]
         new_date = data["new_date"]

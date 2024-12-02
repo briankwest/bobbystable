@@ -5,11 +5,11 @@ import os
 from signalwire_swaig.core import SWAIG, SWAIGArgument
 
 from reservation_system import (
-    create_reservation,
-    get_reservation,
-    update_reservation,
-    cancel_reservation,
-    move_reservation,
+    create_reservation_response,
+    get_reservation_response,
+    update_reservation_response,
+    cancel_reservation_response,
+    move_reservation_response,
     reservations
 )
 import random
@@ -43,7 +43,7 @@ swaig = SWAIG(
     phone_number=SWAIGArgument(type="string", description="Contact phone number in E.164 format (e.g., +19185551234)", required=True)
 )
 def create_reservation(name, party_size, date, time, phone_number, meta_data_token=None, meta_data=None):
-    return create_reservation({
+    return create_reservation_response({
         "name": name,
         "party_size": party_size,
         "date": date,
@@ -56,7 +56,7 @@ def create_reservation(name, party_size, date, time, phone_number, meta_data_tok
     phone_number=SWAIGArgument(type="string", description="Phone number used for the reservation in E.164 format", required=True)
 )
 def get_reservation(phone_number, meta_data_token=None, meta_data=None):
-    return get_reservation({"phone_number": phone_number})
+    return get_reservation_response({"phone_number": phone_number})
 
 @swaig.endpoint(
     description="Update an existing reservation",
@@ -67,7 +67,7 @@ def get_reservation(phone_number, meta_data_token=None, meta_data=None):
     time=SWAIGArgument(type="string", description="Updated time in HH:MM format (optional)", required=True)
 )
 def update_reservation(phone_number, name=None, party_size=None, date=None, time=None, meta_data_token=None, meta_data=None):
-    return update_reservation({
+    return update_reservation_response({
         "phone_number": phone_number,
         "name": name,
         "party_size": party_size,
@@ -80,7 +80,7 @@ def update_reservation(phone_number, name=None, party_size=None, date=None, time
     phone_number=SWAIGArgument(type="string", description="Phone number of the reservation to cancel", required=True)
 )
 def cancel_reservation(phone_number):
-    return cancel_reservation({"phone_number": phone_number})
+    return cancel_reservation_response({"phone_number": phone_number})
 
 @swaig.endpoint(
     description="Move an existing reservation to a new date and time",
@@ -89,7 +89,7 @@ def cancel_reservation(phone_number):
     new_time=SWAIGArgument(type="string", description="New time in HH:MM format", required=True)
 )
 def move_reservation(phone_number, new_date, new_time, meta_data_token=None, meta_data=None):
-    return move_reservation({
+    return move_reservation_response({
         "phone_number": phone_number,
         "new_date": new_date,
         "new_time": new_time
@@ -130,6 +130,8 @@ def get_reservations_table_html():
     table_html += "</table>"
     return table_html
 
+#app route for the reservation page
+@app.route('/swaig', methods=['GET'])
 @app.route('/', methods=['GET'])
 def serve_reservation_html():
     try:
