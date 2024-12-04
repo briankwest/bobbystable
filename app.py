@@ -79,7 +79,7 @@ def update_reservation(phone_number, name=None, party_size=None, date=None, time
     description="Cancel an existing reservation",
     phone_number=SWAIGArgument(type="string", description="Phone number of the reservation to cancel", required=True)
 )
-def cancel_reservation(phone_number):
+def cancel_reservation(phone_number, meta_data_token=None, meta_data=None):
     return cancel_reservation_response({"phone_number": phone_number})
 
 @swaig.endpoint(
